@@ -1,4 +1,3 @@
-import { useRef, useState } from "react";
 import {
   Play,
   Pause,
@@ -6,69 +5,73 @@ import {
   SkipForward,
   Volume2,
   VolumeX,
+  Shuffle,
+  Repeat,
+  Repeat1,
+  ListMusic,
 } from "lucide-react";
-import { formatDuration, getAudioUrl } from "../utils/format";
+import { usePlayer } from "../context/PlayerContext";
+import useAudioPlayer from "../hooks/useAudioPlayer";
+import { formatDuration } from "../utils/format";
 
-export default function PlayerBar({
-  song,
-  isPlaying,
-  onTogglePlay,
-  onNext,
-  onPrev,
-}) {
-  const audioRef = useRef(null);
-  const [progress, setProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [muted, setMuted] = useState(false);
+export default function PlayerBar({ onOpenQueue }) {
+  const {
+    currentSong: song,
+    isPlaying,
+    shuffle,
+    repeat,
+    playNext,
+    playPrev,
+    toggleShuffle,
+    cycleRepeat,
+    setIsPlaying,
+  } = usePlayer();
+
+  const {
+    audioRef,
+    progress,
+    currentTime,
+    duration,
+    muted,
+    volume,
+    handleEnded,
+    seek,
+    toggleMute,
+    setVolume,
+    handleTimeUpdate,
+    handleLoadedMetadata,
+  } = useAudioPlayer();
 
   if (!song) return null;
 
-  const handleTimeUpdate = () => {
-    setCurrentTime(audioRef.current.currentTime);
-    setProgress(
-      (audioRef.current.currentTime / audioRef.current.duration) * 100 || 0,
-    );
-  };
-
-  const handleSeek = (e) => {
+  const handleSeekClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const pct = (e.clientX - rect.left) / rect.width;
-    audioRef.current.currentTime = pct * audioRef.current.duration;
+    seek(((e.clientX - rect.left) / rect.width) * duration);
   };
 
-  const toggleMute = () => {
-    audioRef.current.muted = !muted;
-    setMuted(!muted);
-  };
+  const RepeatIcon = repeat === "one" ? Repeat1 : Repeat;
 
   return (
     <>
-      {/* Hidden audio element */}
       <audio
         ref={audioRef}
-        src={getAudioUrl(song)}
-        autoPlay={isPlaying}
         onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={() => setDuration(audioRef.current.duration)}
-        onEnded={onNext}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleEnded}
       />
 
-      {/* Sticky bottom bar */}
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-800 bg-gray-900/95 backdrop-blur">
-        {/* Progress bar — tappable full width on top of the bar (mobile friendly) */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-800 bg-gray-900/95 backdrop-blur">
         <div
-          onClick={handleSeek}
-          className="group h-1.5 w-full cursor-pointer bg-gray-800"
+          onClick={handleSeekClick}
+          className="h-1.5 w-full cursor-pointer bg-gray-800"
         >
           <div
-            className="h-full bg-green-500 transition-[width]"
+            className="h-full bg-green-500"
             style={{ width: `${progress}%` }}
           />
         </div>
 
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-3 py-2 sm:gap-4 sm:px-4 sm:py-3">
-          {/* Song info — hides album text on small screens */}
           <img
             src={song.image}
             alt=""
@@ -81,16 +84,22 @@ export default function PlayerBar({
             </p>
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
-              onClick={onPrev}
+              onClick={toggleShuffle}
+              className={`hidden sm:block transition ${shuffle ? "text-green-400" : "text-gray-400 hover:text-white"}`}
+              title="Shuffle"
+            >
+              <Shuffle size={18} />
+            </button>
+            <button
+              onClick={playPrev}
               className="text-gray-400 hover:text-white transition"
             >
               <SkipBack size={20} />
             </button>
             <button
-              onClick={onTogglePlay}
+              onClick={() => setIsPlaying((p) => !p)}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 text-black
                          hover:bg-green-400 active:scale-95 transition"
             >
@@ -101,14 +110,20 @@ export default function PlayerBar({
               )}
             </button>
             <button
-              onClick={onNext}
+              onClick={playNext}
               className="text-gray-400 hover:text-white transition"
             >
               <SkipForward size={20} />
             </button>
+            <button
+              onClick={cycleRepeat}
+              className={`hidden sm:block transition ${repeat !== "off" ? "text-green-400" : "text-gray-400 hover:text-white"}`}
+              title={`Repeat: ${repeat}`}
+            >
+              <RepeatIcon size={18} />
+            </button>
           </div>
 
-          {/* Time + volume — hidden on mobile to avoid clutter */}
           <div className="ml-auto hidden items-center gap-3 md:flex">
             <span className="text-xs text-gray-400 tabular-nums">
               {formatDuration(currentTime)} / {formatDuration(duration)}
@@ -117,9 +132,30 @@ export default function PlayerBar({
               onClick={toggleMute}
               className="text-gray-400 hover:text-white transition"
             >
-              {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              {muted || volume === 0 ? (
+                <VolumeX size={18} />
+              ) : (
+                <Volume2 size={18} />
+              )}
             </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={muted ? 0 : volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              className="w-20 accent-green-500"
+            />
           </div>
+
+          {/* Queue button — visible on all sizes */}
+          <button
+            onClick={onOpenQueue}
+            className="ml-auto md:ml-2 text-gray-400 hover:text-white transition"
+          >
+            <ListMusic size={20} />
+          </button>
         </div>
       </div>
     </>
