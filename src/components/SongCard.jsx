@@ -1,15 +1,12 @@
 import { Play, Pause, Heart, Plus } from "lucide-react";
 import { formatDuration, formatPlayCount } from "../utils/format";
 import useFavorites from "../hooks/useFavorites";
+import EqualizerBars from "./EqualizerBars";
+import { usePlayer } from "../context/PlayerContext";
 
-export default function SongCard({
-  song,
-  isCurrent,
-  isPlaying,
-  onPlay,
-  onAddToPlaylist,
-}) {
+export default function SongCard({ song, isCurrent, onPlay, onAddToPlaylist }) {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { isPlaying } = usePlayer();
   const liked = isFavorite(song.id);
 
   return (
@@ -65,9 +62,13 @@ export default function SongCard({
       </div>
 
       {/* Duration */}
-      <span className="shrink-0 text-xs sm:text-sm text-gray-400">
-        {formatDuration(song.duration)}
-      </span>
+      {isCurrent && isPlaying ? (
+        <EqualizerBars color="#22c55e" />
+      ) : (
+        <span className="shrink-0 text-xs sm:text-sm text-gray-400">
+          {formatDuration(song.duration)}
+        </span>
+      )}
 
       {/* Add to playlist */}
       {onAddToPlaylist && (

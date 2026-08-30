@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { searchSongs } from "./api/saavn";
 
 import { PlayerProvider, usePlayer } from "./context/PlayerContext";
-
+import FullScreenPlayer from "./components/FullScreenPlayer";
 import SearchBar from "./components/SearchBar";
 import SongList from "./components/SongList";
 import PlayerBar from "./components/PlayerBar";
@@ -23,6 +23,8 @@ function AppContent() {
   const [lastQuery, setLastQuery] = useState("");
   const [queueOpen, setQueueOpen] = useState(false);
   const [modalSong, setModalSong] = useState(null);
+
+  const [fullScreenOpen, setFullScreenOpen] = useState(false);
 
   const {
     setSongs: setQueueSongs,
@@ -98,7 +100,6 @@ function AppContent() {
           </button>
         </nav>
       </header>
-
       {/* Pages */}
       {page === "home" ? (
         <>
@@ -128,13 +129,18 @@ function AppContent() {
       ) : (
         <LibraryPage />
       )}
-
       {/* Player */}
-      <PlayerBar onOpenQueue={() => setQueueOpen(true)} />
+      <PlayerBar
+        onOpenQueue={() => setQueueOpen(true)}
+        onExpand={() => setFullScreenOpen(true)}
+      />
 
+      <FullScreenPlayer
+        open={fullScreenOpen}
+        onClose={() => setFullScreenOpen(false)}
+      />
       {/* Queue */}
       <QueuePanel open={queueOpen} onClose={() => setQueueOpen(false)} />
-
       {/* Add to Playlist Modal */}
       {modalSong && (
         <AddToPlaylistModal
