@@ -84,34 +84,34 @@ export default function FullScreenPlayer({ open, onClose }) {
   if (!open || !song) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex w-screen h-screen flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[9999] flex w-screen h-screen flex-col overflow-hidden bg-black">
       {/* Blurred backdrop */}
       <img
         src={song.image}
         alt=""
-        className="absolute inset-0 h-full w-full scale-125 object-cover blur-3xl opacity-40"
+        className="absolute inset-0 h-full w-full scale-150 object-cover blur-[80px] opacity-50"
       />
 
       {/* Dim overlay */}
-      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute inset-0 bg-black/50" />
 
       {/* Main content — fills the viewport exactly */}
       <div className="relative z-10 flex h-full w-full flex-col">
         {/* Top bar */}
-        <div className="flex shrink-0 items-center justify-between p-4">
+        <div className="flex shrink-0 items-center justify-between p-5">
           <button
             onClick={onClose}
-            className="text-white/70 transition hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/20 hover:text-white"
             title="Close"
           >
-            <ChevronDown size={28} />
+            <ChevronDown size={20} strokeWidth={2.5} />
           </button>
 
-          <p className="text-xs uppercase tracking-widest text-white/50">
+          <p className="text-[12px] font-medium tracking-tight text-white/50">
             Now Playing
           </p>
 
-          <div className="w-7" />
+          <div className="w-8" />
         </div>
 
         {/* Cover art */}
@@ -119,28 +119,28 @@ export default function FullScreenPlayer({ open, onClose }) {
           <img
             src={song.image}
             alt={song.song}
-            className={`aspect-square w-full max-w-[280px] rounded-2xl object-cover transition-transform duration-500 sm:max-w-[360px] ${
+            className={`aspect-square w-full max-w-[300px] rounded-3xl object-cover transition-transform duration-500 ease-out sm:max-w-[380px] ${
               isPlaying ? "scale-100" : "scale-90"
             }`}
             style={{
-              boxShadow: `0 20px 60px -10px ${theme.primary}66`,
+              boxShadow: `0 30px 70px -15px rgba(0,0,0,0.7)`,
             }}
           />
         </div>
 
         {/* Info + controls */}
-        <div className="shrink-0 px-6 pb-8 pt-2">
+        <div className="shrink-0 px-6 pb-10 pt-2 sm:px-8">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="truncate text-xl font-bold text-white sm:text-2xl">
+              <h2 className="truncate text-[22px] font-semibold tracking-tight text-white sm:text-2xl">
                 {song.song}
               </h2>
 
-              <p className="truncate text-sm text-white/60">
+              <p className="truncate text-[15px] text-white/55">
                 {song.primary_artists}
               </p>
 
-              <p className="truncate text-xs text-white/40">
+              <p className="truncate text-[13px] text-white/35">
                 {song.album}
                 {song.year ? ` • ${song.year}` : ""}
               </p>
@@ -149,7 +149,7 @@ export default function FullScreenPlayer({ open, onClose }) {
             <button
               onClick={() => toggleFavorite(song)}
               className={`shrink-0 p-2 transition ${
-                liked ? "text-red-500" : "text-white/60 hover:text-white"
+                liked ? "text-[#FA233B]" : "text-white/50 hover:text-white"
               }`}
               title={liked ? "Remove from liked" : "Like song"}
             >
@@ -158,89 +158,85 @@ export default function FullScreenPlayer({ open, onClose }) {
           </div>
 
           {/* Progress */}
-          <div onClick={handleSeekClick} className="mt-4 cursor-pointer">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/15">
+          <div onClick={handleSeekClick} className="mt-5 cursor-pointer">
+            <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
               <div
                 className="h-full transition-[width]"
                 style={{
                   width: `${progress}%`,
-                  backgroundColor: theme.primary,
+                  background: "linear-gradient(90deg, #FA233B, #FB5C74)",
                 }}
               />
             </div>
 
-            <div className="mt-1 flex justify-between text-xs tabular-nums text-white/50">
+            <div className="mt-1.5 flex justify-between text-[11px] tabular-nums text-white/40">
               <span>{formatDuration(currentTime)}</span>
               <span>{formatDuration(duration)}</span>
             </div>
           </div>
 
           {/* Controls */}
-          <div className="mt-4 flex items-center justify-center gap-6 sm:gap-8">
+          <div className="mt-6 flex items-center justify-center gap-6 sm:gap-8">
             <button
               onClick={toggleShuffle}
               className={`transition ${
-                shuffle ? "text-white" : "text-white/40"
+                shuffle ? "text-white" : "text-white/35"
               }`}
               title="Shuffle"
             >
-              <Shuffle size={22} />
+              <Shuffle size={20} />
             </button>
 
             <button
               onClick={playPrev}
-              className="text-white/80 transition hover:text-white"
+              className="text-white/85 transition hover:text-white"
               title="Previous"
             >
-              <SkipBack size={30} />
+              <SkipBack size={30} fill="currentColor" />
             </button>
 
             <button
               onClick={() => setIsPlaying((p) => !p)}
-              className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 text-white shadow-lg transition active:scale-95"
-              style={{
-                backgroundColor: theme.primary,
-                filter: "brightness(1.35)",
-              }}
+              className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-white text-black shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition active:scale-95"
               title={isPlaying ? "Pause" : "Play"}
             >
               {isPlaying ? (
-                <Pause size={28} />
+                <Pause size={28} fill="currentColor" />
               ) : (
-                <Play size={28} className="ml-1" />
+                <Play size={28} className="ml-1" fill="currentColor" />
               )}
             </button>
 
             <button
               onClick={playNext}
-              className="text-white/80 transition hover:text-white"
+              className="text-white/85 transition hover:text-white"
               title="Next"
             >
-              <SkipForward size={30} />
+              <SkipForward size={30} fill="currentColor" />
             </button>
 
             <button
               onClick={cycleRepeat}
               className={`transition ${
-                repeat !== "off" ? "text-white" : "text-white/40"
+                repeat !== "off" ? "text-white" : "text-white/35"
               }`}
               title={`Repeat: ${repeat}`}
             >
-              <RepeatIcon size={22} />
+              <RepeatIcon size={20} />
             </button>
           </div>
 
           {/* Volume */}
-          <div className="mt-5 hidden items-center justify-center gap-3 sm:flex">
+          <div className="mt-6 hidden items-center justify-center gap-3 sm:flex">
             <button
               onClick={toggleMute}
-              className="text-white/60 hover:text-white"
+              className="text-white/50 hover:text-white"
               title={muted ? "Unmute" : "Mute"}
             >
               {muted || volume === 0 ? (
-                <VolumeX size={18} />
+                <VolumeX size={17} />
               ) : (
-                <Volume2 size={18} />
+                <Volume2 size={17} />
               )}
             </button>
 

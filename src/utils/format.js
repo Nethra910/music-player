@@ -2,7 +2,7 @@ export function formatDuration(seconds) {
   const s = parseInt(seconds || 0, 10);
   const mins = Math.floor(s / 60);
   const secs = s % 60;
-  return `mins:{mins}:mins:{secs.toString().padStart(2, "0")}`;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
 export function formatPlayCount(count) {

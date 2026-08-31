@@ -54,57 +54,61 @@ function AppContent() {
   );
 
   return (
-    <div className="min-h-screen pb-28 sm:pb-32">
+    <div className="min-h-screen bg-black pb-32 sm:pb-36">
       {/* The ONE audio element */}
       <AudioElement />
 
       {/* Top nav */}
-      <header className="flex items-center justify-between px-4 py-4">
+      <header className="sticky top-0 z-20 flex items-center justify-between px-5 py-4 glass border-b border-white/[0.06]">
         <button
           onClick={() => setPage("home")}
           className="flex items-center gap-2"
         >
-          <Music2 className="text-green-500" size={22} />
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#FA233B] to-[#FB5C74]">
+            <Music2 className="text-white" size={16} strokeWidth={2.5} />
+          </div>
 
-          <h1 className="text-lg font-bold text-white">
-            Saavn<span className="text-green-500">Play</span>
+          <h1 className="text-[17px] font-semibold tracking-tight text-white">
+            Saavn<span className="text-white/50">Play</span>
           </h1>
         </button>
 
-        <nav className="flex gap-1">
+        <nav className="flex items-center gap-1 rounded-full bg-white/[0.06] p-1">
           <button
             onClick={() => setPage("home")}
-            className={`rounded-lg p-2 transition ${
+            className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-all ${
               page === "home"
-                ? "text-green-400"
-                : "text-gray-400 hover:text-white"
+                ? "bg-white text-black"
+                : "text-white/60 hover:text-white"
             }`}
             title="Home"
           >
-            <Home size={22} />
+            <Home size={15} strokeWidth={2.5} />
+            <span className="hidden sm:inline">Home</span>
           </button>
 
           <button
             onClick={() => setPage("library")}
-            className={`rounded-lg p-2 transition ${
+            className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-all ${
               page === "library"
-                ? "text-green-400"
-                : "text-gray-400 hover:text-white"
+                ? "bg-white text-black"
+                : "text-white/60 hover:text-white"
             }`}
             title="Library"
           >
-            <Library size={22} />
+            <Library size={15} strokeWidth={2.5} />
+            <span className="hidden sm:inline">Library</span>
           </button>
         </nav>
       </header>
 
       {page === "home" ? (
         <>
-          <div className="mb-6">
+          <div className="mb-6 mt-6">
             <SearchBar onSearch={handleSearch} loading={loading} />
           </div>
 
-          <main className="mx-auto max-w-5xl px-2 sm:px-4">
+          <main className="mx-auto max-w-5xl px-3 sm:px-6">
             <SongList
               songs={songs}
               loading={loading}
