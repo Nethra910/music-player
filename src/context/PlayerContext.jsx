@@ -5,37 +5,66 @@ import {
   useCallback,
   useMemo,
 } from "react";
+import useAudioPlayer from "../hooks/useAudioPlayer";
 
 const PlayerContext = createContext(null);
 
+/**
+ * Inner provider: attaches the audio engine to the player state.
+ */
+function AudioProvider({ player, children }) {
+  const audio = useAudioPlayer(player);
+
+  const value = useMemo(() => ({ ...player, audio }), [player, audio]);
+
+  return (
+    <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>
+  );
+}
+
+/**
+ * Outer provider: holds all playback state.
+ */
 export function PlayerProvider({ children }) {
-  const [songs, setSongs] = useState([]); // the current list acts as the queue
+  const [songs, setSongs] = useState([]);
   const [currentSong, setCurrentSong] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [shuffle, setShuffle] = useState(false);
   const [repeat, setRepeat] = useState("off"); // "off" | "all" | "one"
 
-  // Returns the next/prev song respecting shuffle & repeat
   const getNeighbor = useCallback(
     (dir) => {
       if (!currentSong || songs.length === 0) return null;
+
       const idx = songs.findIndex((s) => s.id === currentSong.id);
+
       if (shuffle && songs.length > 1) {
         let rand;
+
         do {
           rand = Math.floor(Math.random() * songs.length);
         } while (rand === idx);
+
         return songs[rand];
       }
+
       const nextIdx = (idx + dir + songs.length) % songs.length;
+
+      if (repeat === "off" && (nextIdx < 0 || nextIdx >= songs.length)) {
+        return null;
+      }
+
       return songs[nextIdx];
     },
-    [currentSong, songs, shuffle],
+    [currentSong, songs, shuffle, repeat],
   );
 
   const playSong = useCallback(
     (song, list) => {
-      if (list) setSongs(list);
+      if (list && list.length > 0) {
+        setSongs(list);
+      }
+
       if (currentSong?.id === song.id) {
         setIsPlaying((p) => !p);
       } else {
@@ -47,29 +76,40 @@ export function PlayerProvider({ children }) {
   );
 
   const playNext = useCallback(() => {
+    if (repeat === "one" && currentSong) {
+      setCurrentSong(currentSong);
+      setIsPlaying(true);
+      return;
+    }
+
     const next = getNeighbor(1);
+
     if (next) {
       setCurrentSong(next);
       setIsPlaying(true);
-    } else if (repeat === "off") {
+    } else {
       setIsPlaying(false);
     }
-  }, [getNeighbor, repeat]);
+  }, [getNeighbor, repeat, currentSong]);
 
   const playPrev = useCallback(() => {
     const prev = getNeighbor(-1);
+
     if (prev) {
       setCurrentSong(prev);
       setIsPlaying(true);
     }
   }, [getNeighbor]);
 
-  // Cycle repeat: off → all → one → off
   const cycleRepeat = useCallback(() => {
     setRepeat((r) => (r === "off" ? "all" : r === "all" ? "one" : "off"));
   }, []);
 
-  const value = useMemo(
+  const toggleShuffle = useCallback(() => {
+    setShuffle((s) => !s);
+  }, []);
+
+  const state = useMemo(
     () => ({
       songs,
       currentSong,
@@ -80,7 +120,7 @@ export function PlayerProvider({ children }) {
       playSong,
       playNext,
       playPrev,
-      toggleShuffle: () => setShuffle((s) => !s),
+      toggleShuffle,
       cycleRepeat,
       setIsPlaying,
     }),
@@ -93,17 +133,20 @@ export function PlayerProvider({ children }) {
       playSong,
       playNext,
       playPrev,
+      toggleShuffle,
       cycleRepeat,
     ],
   );
 
-  return (
-    <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>
-  );
+  return <AudioProvider player={state}>{children}</AudioProvider>;
 }
 
 export function usePlayer() {
   const ctx = useContext(PlayerContext);
-  if (!ctx) throw new Error("usePlayer must be used inside <PlayerProvider>");
+
+  if (!ctx) {
+    throw new Error("usePlayer must be used inside <PlayerProvider>");
+  }
+
   return ctx;
 }

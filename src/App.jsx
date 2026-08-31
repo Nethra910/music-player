@@ -1,18 +1,15 @@
 import { useState, useCallback } from "react";
 import { searchSongs } from "./api/saavn";
-
 import { PlayerProvider, usePlayer } from "./context/PlayerContext";
-import FullScreenPlayer from "./components/FullScreenPlayer";
+import AudioElement from "./components/AudioElement";
 import SearchBar from "./components/SearchBar";
 import SongList from "./components/SongList";
 import PlayerBar from "./components/PlayerBar";
 import QueuePanel from "./components/QueuePanel";
-import AddToPlaylistModal from "./components/AddToPlaylistModal";
-
+import FullScreenPlayer from "./components/FullScreenPlayer";
 import LibraryPage from "./pages/LibraryPage";
-
+import AddToPlaylistModal from "./components/AddToPlaylistModal";
 import usePlaylists from "./hooks/usePlaylists";
-
 import { Music2, Home, Library } from "lucide-react";
 
 function AppContent() {
@@ -22,9 +19,8 @@ function AppContent() {
   const [error, setError] = useState(null);
   const [lastQuery, setLastQuery] = useState("");
   const [queueOpen, setQueueOpen] = useState(false);
-  const [modalSong, setModalSong] = useState(null);
-
   const [fullScreenOpen, setFullScreenOpen] = useState(false);
+  const [modalSong, setModalSong] = useState(null);
 
   const {
     setSongs: setQueueSongs,
@@ -59,21 +55,23 @@ function AppContent() {
 
   return (
     <div className="min-h-screen pb-28 sm:pb-32">
-      {/* Top navigation */}
+      {/* The ONE audio element */}
+      <AudioElement />
+
+      {/* Top nav */}
       <header className="flex items-center justify-between px-4 py-4">
         <button
           onClick={() => setPage("home")}
           className="flex items-center gap-2"
         >
-          <Music2 className="text-green-500" size={26} />
+          <Music2 className="text-green-500" size={22} />
 
-          <h1 className="text-lg font-bold">
+          <h1 className="text-lg font-bold text-white">
             Saavn<span className="text-green-500">Play</span>
           </h1>
         </button>
 
         <nav className="flex gap-1">
-          {/* Home */}
           <button
             onClick={() => setPage("home")}
             className={`rounded-lg p-2 transition ${
@@ -86,7 +84,6 @@ function AppContent() {
             <Home size={22} />
           </button>
 
-          {/* Library */}
           <button
             onClick={() => setPage("library")}
             className={`rounded-lg p-2 transition ${
@@ -100,16 +97,14 @@ function AppContent() {
           </button>
         </nav>
       </header>
-      {/* Pages */}
+
       {page === "home" ? (
         <>
-          {/* Search */}
           <div className="mb-6">
             <SearchBar onSearch={handleSearch} loading={loading} />
           </div>
 
-          {/* Song list */}
-          <main className="mx-auto max-w-xl px-2 sm:px-4">
+          <main className="mx-auto max-w-5xl px-2 sm:px-4">
             <SongList
               songs={songs}
               loading={loading}
@@ -117,7 +112,7 @@ function AppContent() {
               currentSong={currentSong}
               isPlaying={isPlaying}
               onPlay={(song) => playSong(song, songs)}
-              onAddToPlaylist={(song) => setModalSong(song)}
+              onAddToPlaylist={setModalSong}
               onRetry={() => {
                 if (lastQuery) {
                   handleSearch(lastQuery);
@@ -129,25 +124,29 @@ function AppContent() {
       ) : (
         <LibraryPage />
       )}
+
       {/* Player */}
       <PlayerBar
         onOpenQueue={() => setQueueOpen(true)}
         onExpand={() => setFullScreenOpen(true)}
       />
 
+      {/* Queue */}
+      <QueuePanel open={queueOpen} onClose={() => setQueueOpen(false)} />
+
+      {/* Full screen player */}
       <FullScreenPlayer
         open={fullScreenOpen}
         onClose={() => setFullScreenOpen(false)}
       />
-      {/* Queue */}
-      <QueuePanel open={queueOpen} onClose={() => setQueueOpen(false)} />
-      {/* Add to Playlist Modal */}
+
+      {/* Add to playlist modal */}
       {modalSong && (
         <AddToPlaylistModal
           song={modalSong}
           playlists={playlists}
-          onAdd={(plId, song) => {
-            addToPlaylist(plId, song);
+          onAdd={(playlistId, song) => {
+            addToPlaylist(playlistId, song);
             setModalSong(null);
           }}
           onCreate={(name, song) => {

@@ -1,31 +1,51 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { usePlayer } from "../context/PlayerContext";
 import { getAudioUrl } from "../utils/format";
 
-export default function useAudioPlayer() {
-  const { currentSong, isPlaying, repeat, playNext, setIsPlaying } =
-    usePlayer();
+/**
+ * The single audio engine for the whole app.
+ * Receives player state as a parameter — does NOT call usePlayer()
+ * (that would create a circular dependency).
+ */
+export default function useAudioPlayer({
+  currentSong,
+  isPlaying,
+  repeat,
+  playNext,
+  setIsPlaying,
+}) {
   const audioRef = useRef(null);
+
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [muted, setMuted] = useState(false);
   const [volume, setVolumeState] = useState(1);
 
-  // Load new song when it changes
+  // Load + play when the song changes
   useEffect(() => {
     if (!audioRef.current || !currentSong) return;
-    audioRef.current.src = getAudioUrl(currentSong);
-    audioRef.current.play().catch(() => setIsPlaying(false)); // autoplay blocked or URL failed
+
+    const audio = audioRef.current;
+    audio.src = getAudioUrl(currentSong);
+    audio.load();
+
+    setCurrentTime(0);
+    setProgress(0);
+    setDuration(0);
+
+    audio.play().catch(() => setIsPlaying(false));
   }, [currentSong, setIsPlaying]);
 
-  // Keep audio element in sync with isPlaying state (THE FIX ✅)
+  // Keep audio element in sync with isPlaying
   useEffect(() => {
     if (!audioRef.current || !currentSong) return;
+
+    const audio = audioRef.current;
+
     if (isPlaying) {
-      audioRef.current.play().catch(() => setIsPlaying(false));
+      audio.play().catch(() => setIsPlaying(false));
     } else {
-      audioRef.current.pause();
+      audio.pause();
     }
   }, [isPlaying, currentSong, setIsPlaying]);
 
@@ -38,25 +58,58 @@ export default function useAudioPlayer() {
   }, [volume, muted]);
 
   const handleEnded = useCallback(() => {
+    const audio = audioRef.current;
+
+    if (!audio) return;
+
     if (repeat === "one") {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play();
+      audio.currentTime = 0;
+      audio.play().catch(() => setIsPlaying(false));
     } else {
-      playNext(); // playNext handles "all" vs "off"
+      playNext();
     }
-  }, [repeat, playNext]);
+  }, [repeat, playNext, setIsPlaying]);
 
   const seek = useCallback((seconds) => {
-    if (audioRef.current && audioRef.current.duration) {
-      audioRef.current.currentTime = seconds;
+    const audio = audioRef.current;
+
+    if (audio && Number.isFinite(audio.duration)) {
+      audio.currentTime = Math.max(0, Math.min(seconds, audio.duration));
     }
   }, []);
 
-  const toggleMute = useCallback(() => setMuted((m) => !m), []);
+  const toggleMute = useCallback(() => {
+    setMuted((m) => !m);
+  }, []);
 
   const setVolume = useCallback((v) => {
-    setVolumeState(v);
-    if (v > 0) setMuted(false);
+    const newVolume = Math.max(0, Math.min(1, Number(v)));
+
+    setVolumeState(newVolume);
+
+    if (newVolume > 0) {
+      setMuted(false);
+    }
+  }, []);
+
+  const handleTimeUpdate = useCallback(() => {
+    const audio = audioRef.current;
+
+    if (!audio) return;
+
+    setCurrentTime(audio.currentTime);
+
+    if (audio.duration && Number.isFinite(audio.duration)) {
+      setProgress((audio.currentTime / audio.duration) * 100);
+    }
+  }, []);
+
+  const handleLoadedMetadata = useCallback(() => {
+    const audio = audioRef.current;
+
+    if (!audio) return;
+
+    setDuration(audio.duration || 0);
   }, []);
 
   return {
@@ -67,15 +120,10 @@ export default function useAudioPlayer() {
     muted,
     volume,
     handleEnded,
+    handleTimeUpdate,
+    handleLoadedMetadata,
     seek,
     toggleMute,
     setVolume,
-    handleTimeUpdate: () => {
-      const a = audioRef.current;
-      if (!a || !a.duration) return;
-      setCurrentTime(a.currentTime);
-      setProgress((a.currentTime / a.duration) * 100);
-    },
-    handleLoadedMetadata: () => setDuration(audioRef.current.duration || 0),
   };
 }
