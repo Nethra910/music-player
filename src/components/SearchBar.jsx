@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 
 const QUICK_CHIPS = [
+  "Pawan Kalyan",
   "Telugu Songs",
-  "Hindi Songs",
-  "Trending 2026",
-  "Punjabi Hits",
+  "Anirudh",
+  "Thaman",
+  "Dsp",
 ];
 
 export default function SearchBar({ onSearch, loading }) {
