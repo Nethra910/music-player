@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 body {
   @apply bg-black text-white antialiased;
   font-family:
@@ -38,6 +43,7 @@ body {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
+/* ---------- Equalizer ---------- */
 @keyframes eq {
   0%,
   100% {
@@ -50,4 +56,186 @@ body {
 .animate-eq {
   height: 25%;
   animation: eq 0.8s ease-in-out infinite;
+}
+
+/* ---------- Entrances ---------- */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s var(--ease-smooth) both;
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-scale-in {
+  animation: scale-in 0.45s var(--ease-spring) both;
+}
+
+@keyframes slide-up-sheet {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-up-sheet {
+  animation: slide-up-sheet 0.4s var(--ease-smooth) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-pop-in {
+  animation: pop-in 0.4s var(--ease-spring) both;
+}
+
+/* ---------- Ambient / looping ---------- */
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--glow-color, rgba(250, 35, 59, 0.5));
+  }
+  50% {
+    box-shadow: 0 0 30px 6px var(--glow-color, rgba(250, 35, 59, 0.5));
+  }
+}
+.animate-glow-pulse {
+  animation: glow-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes float-blob-1 {
+  0%,
+  100% {
+    transform: translate(-10%, -10%) scale(1);
+  }
+  33% {
+    transform: translate(15%, 5%) scale(1.2);
+  }
+  66% {
+    transform: translate(-5%, 15%) scale(0.9);
+  }
+}
+@keyframes float-blob-2 {
+  0%,
+  100% {
+    transform: translate(10%, 10%) scale(1);
+  }
+  33% {
+    transform: translate(-15%, -8%) scale(0.85);
+  }
+  66% {
+    transform: translate(8%, -15%) scale(1.15);
+  }
+}
+@keyframes float-blob-3 {
+  0%,
+  100% {
+    transform: translate(0%, 0%) scale(1);
+  }
+  50% {
+    transform: translate(-12%, 12%) scale(1.25);
+  }
+}
+.animate-blob-1 {
+  animation: float-blob-1 14s ease-in-out infinite;
+}
+.animate-blob-2 {
+  animation: float-blob-2 18s ease-in-out infinite;
+}
+.animate-blob-3 {
+  animation: float-blob-3 22s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.1) 37%,
+    rgba(255, 255, 255, 0.04) 63%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes bar-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.animate-bar-in {
+  transform-origin: left;
+  animation: bar-in 0.6s var(--ease-smooth) both;
+}
+
+/* ---------- Interaction helpers ---------- */
+.spring {
+  transition-timing-function: var(--ease-spring);
+}
+.smooth {
+  transition-timing-function: var(--ease-smooth);
 }

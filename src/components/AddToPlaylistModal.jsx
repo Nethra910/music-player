@@ -18,12 +18,12 @@ export default function AddToPlaylistModal({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-strong border border-white/10 p-5 sm:p-6"
+        className="w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-strong border border-white/10 p-5 sm:p-6 animate-slide-up-sheet sm:animate-scale-in"
       >
         {/* Drag handle (mobile bottom sheet) */}
         <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-white/20 sm:hidden" />
@@ -34,7 +34,7 @@ export default function AddToPlaylistModal({
           </h3>
           <button
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/15 hover:text-white transition"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/60 transition-all duration-200 spring hover:scale-110 hover:bg-white/15 hover:text-white active:scale-90"
           >
             <X size={15} />
           </button>
@@ -48,12 +48,13 @@ export default function AddToPlaylistModal({
               No playlists yet — create one below
             </p>
           )}
-          {playlists.map((pl) => (
+          {playlists.map((pl, i) => (
             <button
               key={pl.id}
               onClick={() => onAdd(pl.id, song)}
-              className="flex w-full items-center justify-between rounded-2xl p-3 text-left
-                         text-[14px] text-white hover:bg-white/[0.06] transition"
+              className="flex w-full animate-fade-in-up items-center justify-between rounded-2xl p-3 text-left
+                         text-[14px] text-white transition-all duration-150 hover:scale-[1.01] hover:bg-white/[0.06] active:scale-[0.99]"
+              style={{ animationDelay: `${i * 0.04}s` }}
             >
               <span className="truncate">{pl.name}</span>
               <span className="text-[12px] text-white/35">
@@ -69,11 +70,11 @@ export default function AddToPlaylistModal({
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
             placeholder="New playlist name"
-            className="flex-1 rounded-full bg-white/[0.08] px-4 py-2.5 text-[14px] text-white outline-none ring-1 ring-white/[0.06] placeholder-white/35 focus:ring-2 focus:ring-white/25 transition"
+            className="flex-1 rounded-full bg-white/[0.08] px-4 py-2.5 text-[14px] text-white outline-none ring-1 ring-white/[0.06] placeholder-white/35 transition-all duration-200 focus:ring-2 focus:ring-white/25"
           />
           <button
             onClick={handleCreate}
-            className="flex items-center gap-1 rounded-full bg-white px-4 py-2.5 text-[14px] font-semibold text-black hover:bg-white/90 active:scale-95 transition"
+            className="flex items-center gap-1 rounded-full bg-white px-4 py-2.5 text-[14px] font-semibold text-black transition-all duration-200 spring hover:scale-105 hover:bg-white/90 active:scale-95"
           >
             <Plus size={16} /> Create
           </button>

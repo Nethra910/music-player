@@ -84,13 +84,28 @@ export default function FullScreenPlayer({ open, onClose }) {
   if (!open || !song) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex w-screen h-screen flex-col overflow-hidden bg-black">
-      {/* Blurred backdrop */}
-      <img
-        src={song.image}
-        alt=""
-        className="absolute inset-0 h-full w-full scale-150 object-cover blur-[80px] opacity-50"
-      />
+    <div className="fixed inset-0 z-[9999] flex w-screen h-screen flex-col overflow-hidden bg-black animate-fade-in">
+      {/* Living, floating color blobs behind the blur — the Apple Music "now playing" background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <img
+          src={song.image}
+          alt=""
+          className="absolute -inset-[20%] h-[140%] w-[140%] scale-110 object-cover opacity-70 animate-blob-1"
+        />
+        <div
+          className="absolute -inset-[10%] h-[120%] w-[120%] rounded-full opacity-50 animate-blob-2"
+          style={{
+            background: `radial-gradient(circle, ${theme.primary}aa, transparent 60%)`,
+          }}
+        />
+        <div
+          className="absolute inset-0 h-full w-full rounded-full opacity-40 animate-blob-3"
+          style={{
+            background: "radial-gradient(circle, #FB5C74aa, transparent 55%)",
+          }}
+        />
+        <div className="absolute inset-0 backdrop-blur-[90px]" />
+      </div>
 
       {/* Dim overlay */}
       <div className="absolute inset-0 bg-black/50" />
@@ -98,10 +113,13 @@ export default function FullScreenPlayer({ open, onClose }) {
       {/* Main content — fills the viewport exactly */}
       <div className="relative z-10 flex h-full w-full flex-col">
         {/* Top bar */}
-        <div className="flex shrink-0 items-center justify-between p-5">
+        <div
+          className="flex shrink-0 items-center justify-between p-5 animate-fade-in-up"
+          style={{ animationDelay: "0.05s" }}
+        >
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/20 hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 transition-all duration-200 spring hover:scale-110 hover:bg-white/20 hover:text-white active:scale-90"
             title="Close"
           >
             <ChevronDown size={20} strokeWidth={2.5} />
@@ -119,18 +137,21 @@ export default function FullScreenPlayer({ open, onClose }) {
           <img
             src={song.image}
             alt={song.song}
-            className={`aspect-square w-full max-w-[300px] rounded-3xl object-cover transition-transform duration-500 ease-out sm:max-w-[380px] ${
-              isPlaying ? "scale-100" : "scale-90"
+            className={`aspect-square w-full max-w-[300px] rounded-3xl object-cover animate-scale-in transition-transform duration-700 ease-out sm:max-w-[380px] ${
+              isPlaying ? "animate-breathe" : "scale-90"
             }`}
             style={{
-              boxShadow: `0 30px 70px -15px rgba(0,0,0,0.7)`,
+              boxShadow: `0 30px 80px -15px ${theme.primary}55, 0 10px 40px -10px rgba(0,0,0,0.6)`,
             }}
           />
         </div>
 
         {/* Info + controls */}
         <div className="shrink-0 px-6 pb-10 pt-2 sm:px-8">
-          <div className="flex items-start justify-between gap-3">
+          <div
+            className="flex items-start justify-between gap-3 animate-fade-in-up"
+            style={{ animationDelay: "0.12s" }}
+          >
             <div className="min-w-0">
               <h2 className="truncate text-[22px] font-semibold tracking-tight text-white sm:text-2xl">
                 {song.song}
@@ -148,20 +169,29 @@ export default function FullScreenPlayer({ open, onClose }) {
 
             <button
               onClick={() => toggleFavorite(song)}
-              className={`shrink-0 p-2 transition ${
+              className={`shrink-0 p-2 transition-transform duration-200 spring hover:scale-125 active:scale-90 ${
                 liked ? "text-[#FA233B]" : "text-white/50 hover:text-white"
               }`}
               title={liked ? "Remove from liked" : "Like song"}
             >
-              <Heart size={24} fill={liked ? "currentColor" : "none"} />
+              <Heart
+                key={liked}
+                size={24}
+                fill={liked ? "currentColor" : "none"}
+                className={liked ? "animate-pop-in" : ""}
+              />
             </button>
           </div>
 
           {/* Progress */}
-          <div onClick={handleSeekClick} className="mt-5 cursor-pointer">
+          <div
+            onClick={handleSeekClick}
+            className="mt-5 cursor-pointer animate-fade-in-up"
+            style={{ animationDelay: "0.18s" }}
+          >
             <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
               <div
-                className="h-full transition-[width]"
+                className="h-full transition-[width] duration-300"
                 style={{
                   width: `${progress}%`,
                   background: "linear-gradient(90deg, #FA233B, #FB5C74)",
@@ -176,10 +206,13 @@ export default function FullScreenPlayer({ open, onClose }) {
           </div>
 
           {/* Controls */}
-          <div className="mt-6 flex items-center justify-center gap-6 sm:gap-8">
+          <div
+            className="mt-6 flex items-center justify-center gap-6 animate-fade-in-up sm:gap-8"
+            style={{ animationDelay: "0.24s" }}
+          >
             <button
               onClick={toggleShuffle}
-              className={`transition ${
+              className={`transition-all duration-200 spring hover:scale-125 active:scale-90 ${
                 shuffle ? "text-white" : "text-white/35"
               }`}
               title="Shuffle"
@@ -189,7 +222,7 @@ export default function FullScreenPlayer({ open, onClose }) {
 
             <button
               onClick={playPrev}
-              className="text-white/85 transition hover:text-white"
+              className="text-white/85 transition-all duration-200 spring hover:scale-125 hover:text-white active:scale-90"
               title="Previous"
             >
               <SkipBack size={30} fill="currentColor" />
@@ -197,19 +230,24 @@ export default function FullScreenPlayer({ open, onClose }) {
 
             <button
               onClick={() => setIsPlaying((p) => !p)}
-              className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-white text-black shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition active:scale-95"
+              className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-white text-black shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition-transform duration-200 spring hover:scale-105 active:scale-90"
               title={isPlaying ? "Pause" : "Play"}
             >
-              {isPlaying ? (
-                <Pause size={28} fill="currentColor" />
-              ) : (
-                <Play size={28} className="ml-1" fill="currentColor" />
-              )}
+              <span
+                key={isPlaying ? "pause" : "play"}
+                className="flex items-center justify-center animate-pop-in"
+              >
+                {isPlaying ? (
+                  <Pause size={28} fill="currentColor" />
+                ) : (
+                  <Play size={28} className="ml-1" fill="currentColor" />
+                )}
+              </span>
             </button>
 
             <button
               onClick={playNext}
-              className="text-white/85 transition hover:text-white"
+              className="text-white/85 transition-all duration-200 spring hover:scale-125 hover:text-white active:scale-90"
               title="Next"
             >
               <SkipForward size={30} fill="currentColor" />
@@ -217,7 +255,7 @@ export default function FullScreenPlayer({ open, onClose }) {
 
             <button
               onClick={cycleRepeat}
-              className={`transition ${
+              className={`transition-all duration-200 spring hover:scale-125 active:scale-90 ${
                 repeat !== "off" ? "text-white" : "text-white/35"
               }`}
               title={`Repeat: ${repeat}`}
@@ -227,10 +265,13 @@ export default function FullScreenPlayer({ open, onClose }) {
           </div>
 
           {/* Volume */}
-          <div className="mt-6 hidden items-center justify-center gap-3 sm:flex">
+          <div
+            className="mt-6 hidden items-center justify-center gap-3 animate-fade-in-up sm:flex"
+            style={{ animationDelay: "0.3s" }}
+          >
             <button
               onClick={toggleMute}
-              className="text-white/50 hover:text-white"
+              className="text-white/50 transition-transform duration-200 spring hover:scale-125 hover:text-white"
               title={muted ? "Unmute" : "Mute"}
             >
               {muted || volume === 0 ? (

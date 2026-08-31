@@ -59,12 +59,12 @@ function AppContent() {
       <AudioElement />
 
       {/* Top nav */}
-      <header className="sticky top-0 z-20 flex items-center justify-between px-5 py-4 glass border-b border-white/[0.06]">
+      <header className="sticky top-0 z-20 flex items-center justify-between px-5 py-4 glass border-b border-white/[0.06] animate-fade-in-up">
         <button
           onClick={() => setPage("home")}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 transition active:scale-95"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#FA233B] to-[#FB5C74]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#FA233B] to-[#FB5C74] transition-transform duration-300 spring hover:scale-110 hover:rotate-6">
             <Music2 className="text-white" size={16} strokeWidth={2.5} />
           </div>
 
@@ -73,13 +73,22 @@ function AppContent() {
           </h1>
         </button>
 
-        <nav className="flex items-center gap-1 rounded-full bg-white/[0.06] p-1">
+        {/* Segmented nav with a sliding pill indicator */}
+        <nav className="relative flex items-center gap-1 rounded-full bg-white/[0.06] p-1">
+          <div
+            className="absolute inset-y-1 w-[calc(50%-4px)] rounded-full bg-white transition-transform duration-300 spring"
+            style={{
+              transform:
+                page === "home"
+                  ? "translateX(0%)"
+                  : "translateX(calc(100% + 4px))",
+            }}
+          />
+
           <button
             onClick={() => setPage("home")}
-            className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-all ${
-              page === "home"
-                ? "bg-white text-black"
-                : "text-white/60 hover:text-white"
+            className={`relative z-10 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-200 ${
+              page === "home" ? "text-black" : "text-white/60 hover:text-white"
             }`}
             title="Home"
           >
@@ -89,9 +98,9 @@ function AppContent() {
 
           <button
             onClick={() => setPage("library")}
-            className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-all ${
+            className={`relative z-10 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-200 ${
               page === "library"
-                ? "bg-white text-black"
+                ? "text-black"
                 : "text-white/60 hover:text-white"
             }`}
             title="Library"
@@ -103,7 +112,7 @@ function AppContent() {
       </header>
 
       {page === "home" ? (
-        <>
+        <div key="home" className="animate-fade-in-up">
           <div className="mb-6 mt-6">
             <SearchBar onSearch={handleSearch} loading={loading} />
           </div>
@@ -124,9 +133,11 @@ function AppContent() {
               }}
             />
           </main>
-        </>
+        </div>
       ) : (
-        <LibraryPage />
+        <div key="library" className="animate-fade-in-up">
+          <LibraryPage />
+        </div>
       )}
 
       {/* Player */}
