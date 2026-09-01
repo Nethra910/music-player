@@ -12,9 +12,9 @@ export default function SongCard({ song, isCurrent, onPlay, onAddToPlaylist }) {
   return (
     <div
       onClick={onPlay}
-      className={`group flex items-center gap-3 sm:gap-4 rounded-xl p-2 sm:p-3 cursor-pointer
-                  transition hover:bg-gray-800/70 ${
-                    isCurrent ? "bg-gray-800" : ""
+      className={`group flex items-center gap-3 sm:gap-4 rounded-2xl p-2 sm:p-3 cursor-pointer
+                  transition-all duration-200 hover:scale-[1.01] hover:bg-white/[0.06] ${
+                    isCurrent ? "bg-[#FA233B]/[0.08]" : ""
                   }`}
     >
       {/* Cover art */}
@@ -23,49 +23,55 @@ export default function SongCard({ song, isCurrent, onPlay, onAddToPlaylist }) {
           src={song.image}
           alt={song.song}
           loading="lazy"
-          className="h-14 w-14 sm:h-16 sm:w-16 rounded-lg object-cover"
+          className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl object-cover shadow-md"
         />
 
         <div
-          className={`absolute inset-0 flex items-center justify-center rounded-lg bg-black/50
+          className={`absolute inset-0 flex items-center justify-center rounded-xl bg-black/50 backdrop-blur-[2px]
                       ${
                         isCurrent && isPlaying
                           ? "opacity-100"
                           : "opacity-0 group-hover:opacity-100"
-                      } transition`}
+                      } transition-all duration-200`}
         >
-          {isCurrent && isPlaying ? (
-            <Pause size={22} className="text-white" />
-          ) : (
-            <Play size={22} className="text-white" />
-          )}
+          <span className="transition-transform duration-200 spring group-hover:scale-110">
+            {isCurrent && isPlaying ? (
+              <Pause size={22} className="text-white" fill="currentColor" />
+            ) : (
+              <Play
+                size={22}
+                className="ml-0.5 text-white"
+                fill="currentColor"
+              />
+            )}
+          </span>
         </div>
       </div>
 
       {/* Info */}
       <div className="min-w-0 flex-1">
         <p
-          className={`truncate text-sm sm:text-base font-medium ${
-            isCurrent ? "text-green-400" : "text-white"
+          className={`truncate text-[14px] sm:text-[15px] font-semibold ${
+            isCurrent ? "text-[#FB5C74]" : "text-white"
           }`}
         >
           {song.song}
         </p>
 
-        <p className="truncate text-xs sm:text-sm text-gray-400">
+        <p className="truncate text-[12px] sm:text-[13px] text-white/50">
           {song.primary_artists}
         </p>
 
-        <p className="truncate text-[11px] sm:text-xs text-gray-500">
+        <p className="truncate text-[11px] sm:text-[12px] text-white/30">
           {song.album} • {song.year} • {formatPlayCount(song.play_count)}
         </p>
       </div>
 
       {/* Duration */}
       {isCurrent && isPlaying ? (
-        <EqualizerBars color="#22c55e" />
+        <EqualizerBars color="#FA233B" />
       ) : (
-        <span className="shrink-0 text-xs sm:text-sm text-gray-400">
+        <span className="shrink-0 text-[12px] sm:text-[13px] tabular-nums text-white/40">
           {formatDuration(song.duration)}
         </span>
       )}
@@ -77,7 +83,7 @@ export default function SongCard({ song, isCurrent, onPlay, onAddToPlaylist }) {
             e.stopPropagation();
             onAddToPlaylist(song);
           }}
-          className="shrink-0 text-gray-500 hover:text-green-400 transition"
+          className="shrink-0 text-white/40 transition-all duration-200 spring hover:scale-125 hover:text-white active:scale-90"
           title="Add to playlist"
           aria-label="Add to playlist"
         >
@@ -91,13 +97,18 @@ export default function SongCard({ song, isCurrent, onPlay, onAddToPlaylist }) {
           e.stopPropagation();
           toggleFavorite(song);
         }}
-        className={`shrink-0 transition ${
-          liked ? "text-red-500" : "text-gray-500 hover:text-red-500"
+        className={`shrink-0 transition-all duration-200 spring hover:scale-125 active:scale-90 ${
+          liked ? "text-[#FA233B]" : "text-white/40 hover:text-[#FA233B]"
         }`}
         title={liked ? "Remove from liked" : "Like song"}
         aria-label={liked ? "Remove from liked" : "Like song"}
       >
-        <Heart size={18} fill={liked ? "currentColor" : "none"} />
+        <Heart
+          key={liked}
+          size={18}
+          fill={liked ? "currentColor" : "none"}
+          className={liked ? "animate-pop-in" : ""}
+        />
       </button>
     </div>
   );

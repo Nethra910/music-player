@@ -9,16 +9,73 @@ import useAudioPlayer from "../hooks/useAudioPlayer";
 
 const PlayerContext = createContext(null);
 
+/*
+ * Separate context for fast-changing audio state
+ * (currentTime / progress / duration).
+ *
+ * This is the core fix: time updates fire ~4x/second. Keeping them
+ * out of PlayerContext means songs/favorites/recent lists never
+ * re-render when playback time advances.
+ */
+const AudioTimeContext = createContext(null);
+
 /**
  * Inner provider: attaches the audio engine to the player state.
  */
 function AudioProvider({ player, children }) {
-  const audio = useAudioPlayer(player);
+  const engine = useAudioPlayer(player);
 
-  const value = useMemo(() => ({ ...player, audio }), [player, audio]);
+  // Rarely-changing audio controls — stable identities.
+  // Exposed via usePlayer().audio (same shape as before, so
+  // components like AudioElement that read audio.audioRef /
+  // audio.handleTimeUpdate keep working unchanged).
+  const controls = useMemo(
+    () => ({
+      audioRef: engine.audioRef,
+      muted: engine.muted,
+      volume: engine.volume,
+      seek: engine.seek,
+      toggleMute: engine.toggleMute,
+      setVolume: engine.setVolume,
+      handleEnded: engine.handleEnded,
+      handleTimeUpdate: engine.handleTimeUpdate,
+      handleLoadedMetadata: engine.handleLoadedMetadata,
+    }),
+    [
+      engine.audioRef,
+      engine.muted,
+      engine.volume,
+      engine.seek,
+      engine.toggleMute,
+      engine.setVolume,
+      engine.handleEnded,
+      engine.handleTimeUpdate,
+      engine.handleLoadedMetadata,
+    ],
+  );
+
+  // Fast-changing values — ONLY components that display time/progress
+  // (PlayerBar, progress UI) subscribe to this.
+  const time = useMemo(
+    () => ({
+      progress: engine.progress,
+      currentTime: engine.currentTime,
+      duration: engine.duration,
+    }),
+    [engine.progress, engine.currentTime, engine.duration],
+  );
 
   return (
-    <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>
+    <PlayerContext.Provider
+      value={useMemo(
+        () => ({ ...player, audio: controls }),
+        [player, controls],
+      )}
+    >
+      <AudioTimeContext.Provider value={time}>
+        {children}
+      </AudioTimeContext.Provider>
+    </PlayerContext.Provider>
   );
 }
 
@@ -146,6 +203,20 @@ export function usePlayer() {
 
   if (!ctx) {
     throw new Error("usePlayer must be used inside <PlayerProvider>");
+  }
+
+  return ctx;
+}
+
+/**
+ * Fast-changing playback time. Only use in components that render
+ * time/progress (PlayerBar, progress bars, fullscreen player timers).
+ */
+export function useAudioTime() {
+  const ctx = useContext(AudioTimeContext);
+
+  if (!ctx) {
+    throw new Error("useAudioTime must be used inside <PlayerProvider>");
   }
 
   return ctx;

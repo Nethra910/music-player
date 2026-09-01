@@ -13,7 +13,7 @@ import {
   Repeat1,
   Heart,
 } from "lucide-react";
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayer, useAudioTime } from "../context/PlayerContext";
 import useSongTheme from "../hooks/useSongTheme";
 import useFavorites from "../hooks/useFavorites";
 import { formatDuration } from "../utils/format";
@@ -34,16 +34,10 @@ export default function FullScreenPlayer({ open, onClose }) {
 
   const { isFavorite, toggleFavorite } = useFavorites();
 
-  const {
-    progress,
-    currentTime,
-    duration,
-    muted,
-    volume,
-    seek,
-    toggleMute,
-    setVolume,
-  } = audio;
+  // Fast-changing values come from the dedicated time context —
+  // audio no longer carries progress/currentTime/duration directly.
+  const { progress, currentTime, duration } = useAudioTime();
+  const { muted, volume, seek, toggleMute, setVolume } = audio;
 
   const theme = useSongTheme(song);
   const liked = song ? isFavorite(song.id) : false;

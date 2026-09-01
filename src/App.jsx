@@ -69,7 +69,7 @@ function AppContent() {
           </div>
 
           <h1 className="text-[17px] font-semibold tracking-tight text-white">
-            ℕ-𝔹𝕖𝕒𝕥𝕤<span className="text-white/50"> 𝖯𝗅𝖺𝗒</span>
+            N-Beats<span className="text-white/50"> Play</span>
           </h1>
         </button>
 
