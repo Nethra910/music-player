@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayer } from "./usePlayerContext";
 
 export default function useKeyboardShortcuts(audioRef) {
   const { isPlaying, setIsPlaying, playNext, playPrev, currentSong } =

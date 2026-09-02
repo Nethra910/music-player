@@ -1,13 +1,7 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useMemo,
-} from "react";
+import { createContext, useState, useCallback, useMemo } from "react";
 import useAudioPlayer from "../hooks/useAudioPlayer";
 
-const PlayerContext = createContext(null);
+export const PlayerContext = createContext(null);
 
 /*
  * Separate context for fast-changing audio state
@@ -17,7 +11,7 @@ const PlayerContext = createContext(null);
  * out of PlayerContext means songs/favorites/recent lists never
  * re-render when playback time advances.
  */
-const AudioTimeContext = createContext(null);
+export const AudioTimeContext = createContext(null);
 
 /**
  * Inner provider: attaches the audio engine to the player state.
@@ -25,10 +19,6 @@ const AudioTimeContext = createContext(null);
 function AudioProvider({ player, children }) {
   const engine = useAudioPlayer(player);
 
-  // Rarely-changing audio controls — stable identities.
-  // Exposed via usePlayer().audio (same shape as before, so
-  // components like AudioElement that read audio.audioRef /
-  // audio.handleTimeUpdate keep working unchanged).
   const controls = useMemo(
     () => ({
       audioRef: engine.audioRef,
@@ -54,8 +44,6 @@ function AudioProvider({ player, children }) {
     ],
   );
 
-  // Fast-changing values — ONLY components that display time/progress
-  // (PlayerBar, progress UI) subscribe to this.
   const time = useMemo(
     () => ({
       progress: engine.progress,
@@ -196,28 +184,4 @@ export function PlayerProvider({ children }) {
   );
 
   return <AudioProvider player={state}>{children}</AudioProvider>;
-}
-
-export function usePlayer() {
-  const ctx = useContext(PlayerContext);
-
-  if (!ctx) {
-    throw new Error("usePlayer must be used inside <PlayerProvider>");
-  }
-
-  return ctx;
-}
-
-/**
- * Fast-changing playback time. Only use in components that render
- * time/progress (PlayerBar, progress bars, fullscreen player timers).
- */
-export function useAudioTime() {
-  const ctx = useContext(AudioTimeContext);
-
-  if (!ctx) {
-    throw new Error("useAudioTime must be used inside <PlayerProvider>");
-  }
-
-  return ctx;
 }

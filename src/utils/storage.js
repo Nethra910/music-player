@@ -17,9 +17,3 @@ export function save(key, value) {
     // storage full or unavailable — fail silently
   }
 }
-
-export function remove(key) {
-  try {
-    localStorage.removeItem(PREFIX + key);
-  } catch {}
-}

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useEffectEvent } from "react";
 import { createPortal } from "react-dom";
 import {
   Play,
@@ -13,7 +13,7 @@ import {
   Repeat1,
   Heart,
 } from "lucide-react";
-import { usePlayer, useAudioTime } from "../context/PlayerContext";
+import { usePlayer, useAudioTime } from "../hooks/usePlayerContext";
 import useSongTheme from "../hooks/useSongTheme";
 import useFavorites from "../hooks/useFavorites";
 import { formatDuration } from "../utils/format";
@@ -34,8 +34,6 @@ export default function FullScreenPlayer({ open, onClose }) {
 
   const { isFavorite, toggleFavorite } = useFavorites();
 
-  // Fast-changing values come from the dedicated time context —
-  // audio no longer carries progress/currentTime/duration directly.
   const { progress, currentTime, duration } = useAudioTime();
   const { muted, volume, seek, toggleMute, setVolume } = audio;
 
@@ -55,23 +53,50 @@ export default function FullScreenPlayer({ open, onClose }) {
     };
   }, [open]);
 
+  // Always reads the latest onClose without making the Effect
+  // re-subscribe every time the parent re-renders with a new
+  // callback identity.
+  const onCloseEvent = useEffectEvent(() => {
+    onClose();
+  });
+
   // Escape key closes fullscreen
   useEffect(() => {
     if (!open) return;
 
     const handleKey = (e) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseEvent();
     };
 
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [open, onClose]);
+  }, [open]);
 
   const handleSeekClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
 
     if (duration > 0) {
       seek(((e.clientX - rect.left) / rect.width) * duration);
+    }
+  };
+
+  const handleSeekKeyDown = (e) => {
+    if (!duration) return;
+
+    const step = 5; // seconds
+
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      seek(Math.min(currentTime + step, duration));
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      seek(Math.max(currentTime - step, 0));
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      seek(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      seek(duration);
     }
   };
 
@@ -113,7 +138,8 @@ export default function FullScreenPlayer({ open, onClose }) {
         >
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 transition-all duration-200 spring hover:scale-110 hover:bg-white/20 hover:text-white active:scale-90"
+            aria-label="Close full screen player"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 transition-[transform,background-color,color] duration-200 spring hover:scale-110 hover:bg-white/20 hover:text-white active:scale-90"
             title="Close"
           >
             <ChevronDown size={20} strokeWidth={2.5} />
@@ -163,7 +189,10 @@ export default function FullScreenPlayer({ open, onClose }) {
 
             <button
               onClick={() => toggleFavorite(song)}
-              className={`shrink-0 p-2 transition-transform duration-200 spring hover:scale-125 active:scale-90 ${
+              aria-label={
+                liked ? "Remove from liked songs" : "Add to liked songs"
+              }
+              className={`shrink-0 p-2 transition-[transform,color] duration-200 spring hover:scale-125 active:scale-90 ${
                 liked ? "text-[#FA233B]" : "text-white/50 hover:text-white"
               }`}
               title={liked ? "Remove from liked" : "Like song"}
@@ -180,7 +209,15 @@ export default function FullScreenPlayer({ open, onClose }) {
           {/* Progress */}
           <div
             onClick={handleSeekClick}
-            className="mt-5 cursor-pointer animate-fade-in-up"
+            onKeyDown={handleSeekKeyDown}
+            role="slider"
+            tabIndex={0}
+            aria-label="Seek"
+            aria-valuemin={0}
+            aria-valuemax={duration || 0}
+            aria-valuenow={currentTime || 0}
+            aria-valuetext={`${formatDuration(currentTime)} of ${formatDuration(duration)}`}
+            className="mt-5 cursor-pointer animate-fade-in-up outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-full"
             style={{ animationDelay: "0.18s" }}
           >
             <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
@@ -206,7 +243,9 @@ export default function FullScreenPlayer({ open, onClose }) {
           >
             <button
               onClick={toggleShuffle}
-              className={`transition-all duration-200 spring hover:scale-125 active:scale-90 ${
+              aria-label={shuffle ? "Disable shuffle" : "Enable shuffle"}
+              aria-pressed={shuffle}
+              className={`transition-[transform,color] duration-200 spring hover:scale-125 active:scale-90 ${
                 shuffle ? "text-white" : "text-white/35"
               }`}
               title="Shuffle"
@@ -216,7 +255,8 @@ export default function FullScreenPlayer({ open, onClose }) {
 
             <button
               onClick={playPrev}
-              className="text-white/85 transition-all duration-200 spring hover:scale-125 hover:text-white active:scale-90"
+              aria-label="Previous song"
+              className="text-white/85 transition-[transform,color] duration-200 spring hover:scale-125 hover:text-white active:scale-90"
               title="Previous"
             >
               <SkipBack size={30} fill="currentColor" />
@@ -224,6 +264,7 @@ export default function FullScreenPlayer({ open, onClose }) {
 
             <button
               onClick={() => setIsPlaying((p) => !p)}
+              aria-label={isPlaying ? "Pause" : "Play"}
               className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-white text-black shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition-transform duration-200 spring hover:scale-105 active:scale-90"
               title={isPlaying ? "Pause" : "Play"}
             >
@@ -241,7 +282,8 @@ export default function FullScreenPlayer({ open, onClose }) {
 
             <button
               onClick={playNext}
-              className="text-white/85 transition-all duration-200 spring hover:scale-125 hover:text-white active:scale-90"
+              aria-label="Next song"
+              className="text-white/85 transition-[transform,color] duration-200 spring hover:scale-125 hover:text-white active:scale-90"
               title="Next"
             >
               <SkipForward size={30} fill="currentColor" />
@@ -249,7 +291,8 @@ export default function FullScreenPlayer({ open, onClose }) {
 
             <button
               onClick={cycleRepeat}
-              className={`transition-all duration-200 spring hover:scale-125 active:scale-90 ${
+              aria-label={`Repeat: ${repeat}`}
+              className={`transition-[transform,color] duration-200 spring hover:scale-125 active:scale-90 ${
                 repeat !== "off" ? "text-white" : "text-white/35"
               }`}
               title={`Repeat: ${repeat}`}
@@ -265,6 +308,7 @@ export default function FullScreenPlayer({ open, onClose }) {
           >
             <button
               onClick={toggleMute}
+              aria-label={muted ? "Unmute" : "Mute"}
               className="text-white/50 transition-transform duration-200 spring hover:scale-125 hover:text-white"
               title={muted ? "Unmute" : "Mute"}
             >

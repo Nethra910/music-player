@@ -11,7 +11,7 @@ import {
   ListMusic,
   ChevronUp,
 } from "lucide-react";
-import { usePlayer, useAudioTime } from "../context/PlayerContext";
+import { usePlayer, useAudioTime } from "../hooks/usePlayerContext";
 import useKeyboardShortcuts from "../hooks/useKeyboardShortcuts";
 import useSongTheme from "../hooks/useSongTheme";
 import { formatDuration } from "../utils/format";

@@ -1,5 +1,5 @@
 import { memo, useCallback, useState } from "react";
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayer } from "../hooks/usePlayerContext";
 import useFavorites from "../hooks/useFavorites";
 import useRecentlyPlayed from "../hooks/useRecentlyPlayed";
 import usePlaylists from "../hooks/usePlaylists";
@@ -33,26 +33,28 @@ const SongRow = memo(function SongRow({
 }) {
   return (
     <div
-      className="group flex animate-fade-in-up items-center gap-3 rounded-2xl p-2.5 transition-all duration-200 hover:scale-[1.01] hover:bg-white/[0.06]"
+      className="group flex animate-fade-in-up items-center gap-3 rounded-2xl p-2.5 transition-[transform,background-color] duration-200 hover:scale-[1.01] hover:bg-white/[0.06]"
       style={{ animationDelay: Math.min(index, 12) * 0.04 + "s" }}
     >
-      <img
-        src={song.image}
-        alt=""
-        className="h-12 w-12 cursor-pointer rounded-xl object-cover transition-transform duration-200 spring hover:scale-105"
+      <button
         onClick={() => onPlay(song)}
-      />
-      <div
-        className="min-w-0 flex-1 cursor-pointer"
-        onClick={() => onPlay(song)}
+        aria-label={`Play ${song.song}`}
+        className="shrink-0 rounded-xl transition-transform duration-200 spring hover:scale-105"
       >
+        <img
+          src={song.image}
+          alt=""
+          className="h-12 w-12 rounded-xl object-cover"
+        />
+      </button>
+      <button onClick={() => onPlay(song)} className="min-w-0 flex-1 text-left">
         <p className="truncate text-[14px] font-medium text-white">
           {song.song}
         </p>
         <p className="truncate text-[12px] text-white/45">
           {song.primary_artists}
         </p>
-      </div>
+      </button>
       <span className="text-[12px] tabular-nums text-white/35">
         {formatDuration(song.duration)}
       </span>
@@ -60,7 +62,8 @@ const SongRow = memo(function SongRow({
       {/* Add to playlist */}
       <button
         onClick={() => onAddToPlaylist(song)}
-        className="text-white/40 transition-all duration-200 spring hover:scale-125 hover:text-white active:scale-90"
+        aria-label={`Add ${song.song} to playlist`}
+        className="text-white/40 transition-[transform,color] duration-200 spring hover:scale-125 hover:text-white active:scale-90"
         title="Add to playlist"
       >
         <Plus size={17} />
@@ -69,7 +72,8 @@ const SongRow = memo(function SongRow({
       {/* Like toggle */}
       <button
         onClick={() => onToggleLike(song)}
-        className={`transition-all duration-200 spring hover:scale-125 active:scale-90 ${
+        aria-label={liked ? `Unlike ${song.song}` : `Like ${song.song}`}
+        className={`transition-[transform,color] duration-200 spring hover:scale-125 active:scale-90 ${
           liked ? "text-[#FA233B]" : "text-white/40 hover:text-[#FA233B]"
         }`}
       >
@@ -79,7 +83,8 @@ const SongRow = memo(function SongRow({
       {onRemove && (
         <button
           onClick={onRemove}
-          className="text-white/40 transition-all duration-200 spring hover:scale-125 hover:text-white active:scale-90"
+          aria-label={`Remove ${song.song} from playlist`}
+          className="text-white/40 transition-[transform,color] duration-200 spring hover:scale-125 hover:text-white active:scale-90"
         >
           <X size={17} />
         </button>
@@ -176,7 +181,7 @@ export default function LibraryPage() {
           <>
             <button
               onClick={() => playAll(favorites)}
-              className="mb-3 flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-black transition-all duration-200 spring hover:scale-105 hover:bg-white/90 active:scale-95"
+              className="mb-3 flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-black transition-[transform,background-color] duration-200 spring hover:scale-105 hover:bg-white/90 active:scale-95"
             >
               <Play size={14} fill="currentColor" /> Play All (
               {favorites.length})
@@ -206,13 +211,13 @@ export default function LibraryPage() {
             <div className="mb-3 flex gap-2">
               <button
                 onClick={() => playAll(recent)}
-                className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-black transition-all duration-200 spring hover:scale-105 hover:bg-white/90 active:scale-95"
+                className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-black transition-[transform,background-color] duration-200 spring hover:scale-105 hover:bg-white/90 active:scale-95"
               >
                 <Play size={14} fill="currentColor" /> Play All
               </button>
               <button
                 onClick={clearRecent}
-                className="flex items-center gap-1.5 rounded-full bg-white/[0.08] px-4 py-2.5 text-[13px] text-white/60 transition-all duration-200 spring hover:scale-105 hover:bg-white/[0.14] hover:text-white active:scale-95"
+                className="flex items-center gap-1.5 rounded-full bg-white/[0.08] px-4 py-2.5 text-[13px] text-white/60 transition-[transform,background-color,color] duration-200 spring hover:scale-105 hover:bg-white/[0.14] hover:text-white active:scale-95"
               >
                 <Trash2 size={14} /> Clear
               </button>
@@ -243,9 +248,17 @@ export default function LibraryPage() {
             {playlists.map((pl, i) => (
               <div
                 key={pl.id}
-                className="group relative animate-pop-in cursor-pointer rounded-2xl bg-white/[0.06] p-4 transition-all duration-200 hover:scale-[1.03] hover:bg-white/[0.1]"
+                className="group relative animate-pop-in cursor-pointer rounded-2xl bg-white/[0.06] p-4 transition-[transform,background-color] duration-200 hover:scale-[1.03] hover:bg-white/[0.1]"
                 style={{ animationDelay: i * 0.05 + "s" }}
                 onClick={() => setOpenPlaylist(pl)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setOpenPlaylist(pl);
+                  }
+                }}
               >
                 <div className="mb-3 flex h-24 items-center justify-center rounded-xl bg-white/[0.08] transition-transform duration-300 group-hover:scale-105">
                   <ListMusic size={30} className="text-white/30" />
@@ -261,7 +274,8 @@ export default function LibraryPage() {
                     e.stopPropagation();
                     deletePlaylist(pl.id);
                   }}
-                  className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 transition-all duration-200 spring hover:scale-110 hover:text-[#FA233B] group-hover:flex"
+                  aria-label={`Delete playlist ${pl.name}`}
+                  className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 transition-[transform,color] duration-200 spring hover:scale-110 hover:text-[#FA233B] group-hover:flex"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -276,7 +290,8 @@ export default function LibraryPage() {
           <div className="mb-3 flex items-center gap-3">
             <button
               onClick={() => setOpenPlaylist(null)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.08] text-white/60 transition-all duration-200 spring hover:scale-110 hover:text-white active:scale-90"
+              aria-label="Back to playlists"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.08] text-white/60 transition-[transform,color] duration-200 spring hover:scale-110 hover:text-white active:scale-90"
             >
               ←
             </button>
@@ -286,7 +301,7 @@ export default function LibraryPage() {
             {openPlaylist.songs.length > 0 && (
               <button
                 onClick={() => playAll(openPlaylist.songs)}
-                className="ml-auto flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-[13px] font-semibold text-black transition-all duration-200 spring hover:scale-105 hover:bg-white/90"
+                className="ml-auto flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-[13px] font-semibold text-black transition-[transform,background-color] duration-200 spring hover:scale-105 hover:bg-white/90"
               >
                 <Play size={13} fill="currentColor" /> Play
               </button>

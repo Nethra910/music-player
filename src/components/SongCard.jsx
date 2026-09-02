@@ -2,7 +2,7 @@ import { Play, Pause, Heart, Plus } from "lucide-react";
 import { formatDuration, formatPlayCount } from "../utils/format";
 import useFavorites from "../hooks/useFavorites";
 import EqualizerBars from "./EqualizerBars";
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayer } from "../hooks/usePlayerContext";
 
 export default function SongCard({ song, isCurrent, onPlay, onAddToPlaylist }) {
   const { isFavorite, toggleFavorite } = useFavorites();

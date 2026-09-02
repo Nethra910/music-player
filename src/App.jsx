@@ -1,6 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { searchSongs } from "./api/saavn";
-import { PlayerProvider, usePlayer } from "./context/PlayerContext";
+import { PlayerProvider } from "./context/PlayerContext";
+import { usePlayer } from "./hooks/usePlayerContext";
 import AudioElement from "./components/AudioElement";
 import SearchBar from "./components/SearchBar";
 import SongList from "./components/SongList";
@@ -17,7 +18,7 @@ function AppContent() {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [lastQuery, setLastQuery] = useState("");
+  const lastQueryRef = useRef("");
   const [queueOpen, setQueueOpen] = useState(false);
   const [fullScreenOpen, setFullScreenOpen] = useState(false);
   const [modalSong, setModalSong] = useState(null);
@@ -36,7 +37,7 @@ function AppContent() {
       setPage("home");
       setLoading(true);
       setError(null);
-      setLastQuery(query);
+      lastQueryRef.current = query;
 
       try {
         const data = await searchSongs(query);
@@ -127,8 +128,8 @@ function AppContent() {
               onPlay={(song) => playSong(song, songs)}
               onAddToPlaylist={setModalSong}
               onRetry={() => {
-                if (lastQuery) {
-                  handleSearch(lastQuery);
+                if (lastQueryRef.current) {
+                  handleSearch(lastQueryRef.current);
                 }
               }}
             />

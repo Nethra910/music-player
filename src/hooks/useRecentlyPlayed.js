@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { load, save } from "../utils/storage";
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayer } from "./usePlayerContext";
 
 const MAX_RECENT = 20;
 

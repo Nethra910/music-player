@@ -21,6 +21,20 @@ export default function useAudioPlayer({
   const [muted, setMuted] = useState(false);
   const [volume, setVolumeState] = useState(1);
 
+  // Reset the tracked playback numbers the moment the song identity
+  // changes, computed during render instead of in a separate Effect.
+  // This is the React-recommended "adjusting state when a prop
+  // changes" pattern: React re-renders before committing, so the UI
+  // never flashes the previous song's stale time/progress.
+  const [trackedSongId, setTrackedSongId] = useState(currentSong?.id);
+
+  if (trackedSongId !== currentSong?.id) {
+    setTrackedSongId(currentSong?.id);
+    setCurrentTime(0);
+    setProgress(0);
+    setDuration(0);
+  }
+
   // Load + play when the song changes
   useEffect(() => {
     if (!audioRef.current || !currentSong) return;
@@ -28,10 +42,6 @@ export default function useAudioPlayer({
     const audio = audioRef.current;
     audio.src = getAudioUrl(currentSong);
     audio.load();
-
-    setCurrentTime(0);
-    setProgress(0);
-    setDuration(0);
 
     audio.play().catch(() => setIsPlaying(false));
   }, [currentSong, setIsPlaying]);

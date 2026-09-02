@@ -1,5 +1,5 @@
 import { X, Music2 } from "lucide-react";
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayer } from "../hooks/usePlayerContext";
 import { formatDuration } from "../utils/format";
 
 export default function QueuePanel({ open, onClose }) {

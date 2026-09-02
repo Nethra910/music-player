@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { X, Plus, ListPlus } from "lucide-react";
 
 export default function AddToPlaylistModal({
@@ -9,6 +9,7 @@ export default function AddToPlaylistModal({
   onClose,
 }) {
   const [newName, setNewName] = useState("");
+  const nameFieldId = useId();
 
   const handleCreate = () => {
     if (!newName.trim()) return;
@@ -20,6 +21,15 @@ export default function AddToPlaylistModal({
     <div
       className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 animate-fade-in"
       onClick={onClose}
+      role="button"
+      tabIndex={0}
+      aria-label="Close add to playlist modal"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClose();
+        }
+      }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -34,7 +44,8 @@ export default function AddToPlaylistModal({
           </h3>
           <button
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/60 transition-all duration-200 spring hover:scale-110 hover:bg-white/15 hover:text-white active:scale-90"
+            aria-label="Close"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/60 transition-[transform,background-color,color] duration-200 spring hover:scale-110 hover:bg-white/15 hover:text-white active:scale-90"
           >
             <X size={15} />
           </button>
@@ -53,7 +64,7 @@ export default function AddToPlaylistModal({
               key={pl.id}
               onClick={() => onAdd(pl.id, song)}
               className="flex w-full animate-fade-in-up items-center justify-between rounded-2xl p-3 text-left
-                         text-[14px] text-white transition-all duration-150 hover:scale-[1.01] hover:bg-white/[0.06] active:scale-[0.99]"
+                         text-[14px] text-white transition-[transform,background-color] duration-150 hover:scale-[1.01] hover:bg-white/[0.06] active:scale-[0.99]"
               style={{ animationDelay: `${i * 0.04}s` }}
             >
               <span className="truncate">{pl.name}</span>
@@ -64,20 +75,29 @@ export default function AddToPlaylistModal({
           ))}
         </div>
 
-        <div className="mt-4 flex gap-2 border-t border-white/10 pt-4">
-          <input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-            placeholder="New playlist name"
-            className="flex-1 rounded-full bg-white/[0.08] px-4 py-2.5 text-[14px] text-white outline-none ring-1 ring-white/[0.06] placeholder-white/35 transition-all duration-200 focus:ring-2 focus:ring-white/25"
-          />
-          <button
-            onClick={handleCreate}
-            className="flex items-center gap-1 rounded-full bg-white px-4 py-2.5 text-[14px] font-semibold text-black transition-all duration-200 spring hover:scale-105 hover:bg-white/90 active:scale-95"
+        <div className="mt-4 border-t border-white/10 pt-4">
+          <label
+            htmlFor={nameFieldId}
+            className="mb-1.5 block text-[12px] font-medium text-white/50"
           >
-            <Plus size={16} /> Create
-          </button>
+            New playlist name
+          </label>
+          <div className="flex gap-2">
+            <input
+              id={nameFieldId}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+              placeholder="e.g. Road Trip Mix"
+              className="flex-1 rounded-full bg-white/[0.08] px-4 py-2.5 text-[14px] text-white outline-none ring-1 ring-white/[0.06] placeholder-white/35 transition-all duration-200 focus:ring-2 focus:ring-white/25"
+            />
+            <button
+              onClick={handleCreate}
+              className="flex items-center gap-1 rounded-full bg-white px-4 py-2.5 text-[14px] font-semibold text-black transition-[transform,background-color] duration-200 spring hover:scale-105 hover:bg-white/90 active:scale-95"
+            >
+              <Plus size={16} /> Create
+            </button>
+          </div>
         </div>
       </div>
     </div>
