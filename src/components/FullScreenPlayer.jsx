@@ -132,8 +132,9 @@ export default function FullScreenPlayer({ open, onClose }) {
       {/* Dim overlay */}
       <div className="absolute inset-0 bg-black/50" />
 
-      {/* Main content — fills the viewport exactly */}
-      <div className="relative z-10 flex h-full w-full flex-col">
+      {/* Main content — fills the viewport, scrolls as a fallback on very
+          short screens instead of ever clipping the controls below */}
+      <div className="relative z-10 flex h-full w-full flex-col overflow-y-auto overscroll-contain">
         {/* Top bar */}
         <div
           className="flex shrink-0 items-center justify-between p-5 animate-fade-in-up"
@@ -155,12 +156,13 @@ export default function FullScreenPlayer({ open, onClose }) {
           <div className="w-8" />
         </div>
 
-        {/* Cover art */}
-        <div className="flex min-h-0 flex-1 items-center justify-center px-8 py-4 sm:py-4">
+        {/* Cover art — shrinks first on short viewports so the controls
+            below always keep their space */}
+        <div className="flex min-h-0 flex-1 shrink items-center justify-center px-8 py-2 sm:py-4">
           <img
             src={song.image}
             alt={song.song}
-            className={`aspect-square h-auto w-full max-w-[min(300px,60dvh)] rounded-3xl object-cover animate-scale-in transition-transform duration-700 ease-out sm:max-w-[380px] ${
+            className={`aspect-square h-auto w-full max-w-[min(260px,42dvh)] rounded-3xl object-cover animate-scale-in transition-transform duration-700 ease-out sm:max-w-[380px] ${
               isPlaying ? "animate-breathe" : "scale-90"
             }`}
             style={{
@@ -225,7 +227,7 @@ export default function FullScreenPlayer({ open, onClose }) {
             aria-valuemax={duration || 0}
             aria-valuenow={currentTime || 0}
             aria-valuetext={`${formatDuration(currentTime)} of ${formatDuration(duration)}`}
-            className="mt-5 cursor-pointer animate-fade-in-up outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-full"
+            className="mt-3 cursor-pointer animate-fade-in-up outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-full sm:mt-5"
             style={{ animationDelay: "0.18s" }}
           >
             <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
@@ -246,7 +248,7 @@ export default function FullScreenPlayer({ open, onClose }) {
 
           {/* Controls */}
           <div
-            className="mt-6 flex items-center justify-center gap-6 animate-fade-in-up sm:gap-8"
+            className="mt-4 flex items-center justify-center gap-4 animate-fade-in-up sm:mt-6 sm:gap-8"
             style={{ animationDelay: "0.24s" }}
           >
             <button
@@ -273,7 +275,7 @@ export default function FullScreenPlayer({ open, onClose }) {
             <button
               onClick={() => setIsPlaying((p) => !p)}
               aria-label={isPlaying ? "Pause" : "Play"}
-              className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-white text-black shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition-transform duration-200 spring hover:scale-105 active:scale-90"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition-transform duration-200 spring hover:scale-105 active:scale-90 sm:h-[68px] sm:w-[68px]"
               title={isPlaying ? "Pause" : "Play"}
             >
               <span
@@ -281,9 +283,9 @@ export default function FullScreenPlayer({ open, onClose }) {
                 className="flex items-center justify-center animate-pop-in"
               >
                 {isPlaying ? (
-                  <Pause size={28} fill="currentColor" />
+                  <Pause size={26} fill="currentColor" />
                 ) : (
-                  <Play size={28} className="ml-1" fill="currentColor" />
+                  <Play size={26} className="ml-1" fill="currentColor" />
                 )}
               </span>
             </button>
