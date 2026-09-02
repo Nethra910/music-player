@@ -103,7 +103,10 @@ export default function FullScreenPlayer({ open, onClose }) {
   if (!open || !song) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex w-screen h-screen flex-col overflow-hidden bg-black animate-fade-in">
+    <div
+      className="fixed inset-0 z-[9999] flex w-screen flex-col overflow-hidden bg-black animate-fade-in"
+      style={{ height: "100dvh" }}
+    >
       {/* Living, floating color blobs behind the blur — the Apple Music "now playing" background */}
       <div className="absolute inset-0 overflow-hidden">
         <img
@@ -153,11 +156,11 @@ export default function FullScreenPlayer({ open, onClose }) {
         </div>
 
         {/* Cover art */}
-        <div className="flex min-h-0 flex-1 items-center justify-center px-8 py-4">
+        <div className="flex min-h-0 flex-1 items-center justify-center px-8 py-4 sm:py-4">
           <img
             src={song.image}
             alt={song.song}
-            className={`aspect-square w-full max-w-[300px] rounded-3xl object-cover animate-scale-in transition-transform duration-700 ease-out sm:max-w-[380px] ${
+            className={`aspect-square h-auto w-full max-w-[min(300px,60dvh)] rounded-3xl object-cover animate-scale-in transition-transform duration-700 ease-out sm:max-w-[380px] ${
               isPlaying ? "animate-breathe" : "scale-90"
             }`}
             style={{
@@ -167,7 +170,12 @@ export default function FullScreenPlayer({ open, onClose }) {
         </div>
 
         {/* Info + controls */}
-        <div className="shrink-0 px-6 pb-10 pt-2 sm:px-8">
+        <div
+          className="shrink-0 px-6 pb-4 pt-2 sm:px-8 sm:pb-10"
+          style={{
+            paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+          }}
+        >
           <div
             className="flex items-start justify-between gap-3 animate-fade-in-up"
             style={{ animationDelay: "0.12s" }}
